@@ -1,3 +1,91 @@
+// import 'package:flutter/material.dart';
+// import 'package:go_router/go_router.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter_animate/flutter_animate.dart';
+// import 'package:flutter_screenutil/flutter_screenutil.dart';
+// import 'package:quron_app/feautures/view/screens/star_painter.dart';
+// import 'package:quron_app/gen/assets.gen.dart';
+
+// class SplashScreen extends StatefulWidget {
+//   const SplashScreen({super.key});
+//   static String path = '/';
+
+//   @override
+//   State<SplashScreen> createState() => _SplashScreenState();
+// }
+
+// class _SplashScreenState extends State<SplashScreen> {
+//   @override
+//   void initState() {
+//     super.initState();
+//     _navigate();
+//   }
+
+//   void _navigate() async {
+//     await Future.delayed(const Duration(seconds: 4));
+//     final user = FirebaseAuth.instance.currentUser;
+//     if (!mounted) return;
+
+//     context.go(user != null ? '/home' : '/log_in');
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       body: Animate(
+//         effects: [
+//           FadeEffect(duration: 600.ms),
+//           SlideEffect(
+//             begin: const Offset(0, 0.3),
+//             end: Offset.zero,
+//             duration: 1000.ms,
+//           ),
+//         ],
+//         child: Container(
+//           width: double.infinity,
+//           height: double.infinity,
+//           decoration: const BoxDecoration(
+//             gradient: LinearGradient(
+//               colors: [Color(0xFF010E36), Color(0xFF081243)],
+//               begin: Alignment.topCenter,
+//               end: Alignment.bottomCenter,
+//             ),
+//           ),
+//           child: Stack(
+//             alignment: Alignment.center,
+//             children: [
+//               const AnimatedStarsLayer(),
+//               Assets.images.splashLogo.svg(),
+//               Positioned(
+//                 bottom: 220.h,
+//                 child: Text(
+//                   'Quran Kareem',
+//                   style: TextStyle(
+//                     fontSize: 24.sp,
+//                     fontWeight: FontWeight.bold,
+//                     color: Colors.white,
+//                   ),
+//                 ),
+//               ),
+//               Positioned(
+//                 bottom: 0,
+//                 left: 0,
+//                 right: 0,
+//                 child: Assets.images.splashBottom.svg(
+//                   fit: BoxFit.cover,
+//                   colorFilter: const ColorFilter.mode(
+//                     Colors.black,
+//                     BlendMode.srcIn,
+//                   ),
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -8,6 +96,7 @@ import 'package:quron_app/gen/assets.gen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+  static String path = '/';
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -64,7 +153,7 @@ class _SplashScreenState extends State<SplashScreen> {
               const AnimatedStarsLayer(),
               Assets.images.splashLogo.svg(),
               Positioned(
-                bottom: 220.h,
+                bottom: 200.h,
                 child: Text(
                   'Quran Kareem',
                   style: TextStyle(

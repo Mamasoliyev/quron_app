@@ -3,15 +3,15 @@ part of 'app_router.dart';
 final GoRouter router = GoRouter(
   initialLocation: '/',
   routes: <RouteBase>[
-    GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
+    GoRoute(path: SplashScreen.path, builder: (context, state) => const SplashScreen()),
 
-    GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+    GoRoute(path: HomeScreen.path, builder: (context, state) => const HomeScreen()),
 
     GoRoute(
-      path: '/sign_up',
+      path: SignUpScreen.path,
       builder: (context, state) => const SignUpScreen(),
     ),
 
-    GoRoute(path: '/log_in', builder: (context, state) => LogInScreen()),
+    GoRoute(path: LogInScreen.path, builder: (context, state) => LogInScreen()),
   ],
 );

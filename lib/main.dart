@@ -4,7 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:quron_app/core/app/router/app_router.dart';
 import 'package:quron_app/feautures/view_model/audio_provider.dart';
-import 'package:quron_app/feautures/view_model/quron_provider.dart';
+import 'package:quron_app/feautures/view_model/auth_provider.dart';
+import 'package:quron_app/feautures/view_model/surah_provider.dart';
 import 'package:quron_app/feautures/view_model/theme_provider.dart';
 import 'package:quron_app/firebase_options.dart';
 
@@ -25,8 +26,10 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (context, child) => MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => QuronProvider()),
+          ChangeNotifierProvider(create: (_) => SurahProvider()),
           ChangeNotifierProvider(create: (_) => AudioProvider()),
+          ChangeNotifierProvider(create: (_) => AuthProvider()),
+          ChangeNotifierProvider(create: (_) => SurahProvider()),
           ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ],
         child: Consumer<ThemeProvider>(
