@@ -7,7 +7,13 @@ import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:quron_app/feautures/models/user_model.dart';
+import 'package:quron_app/feautures/view/screens/audio_screen.dart';
+import 'package:quron_app/feautures/view/screens/book_mark_screen.dart';
 import 'package:quron_app/feautures/view/screens/login_screen.dart';
+import 'package:quron_app/feautures/view/screens/shared_preferences.dart';
+import 'package:quron_app/feautures/view/screens/star_painter.dart';
+import 'package:quron_app/feautures/view/screens/surah_screen.dart';
 import 'package:quron_app/feautures/view_model/auth_provider.dart'
     show AuthProvider;
 import 'package:quron_app/gen/assets.gen.dart';
@@ -21,15 +27,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<String> category = [
-    "Surah",
-    "Para",
-    "Surah Yasin",
-    "Ait Al-cursi",
-  ];
   late TextEditingController textController;
-
   final _advancedDrawerController = AdvancedDrawerController();
+  List<String> category = ["Surah", "Para", "Surah Yasin", "Ait Al-cursi"];
 
   @override
   void initState() {
@@ -41,9 +41,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtil.init(context); // Ensure ScreenUtil is initialized
     final user = context.watch<AuthProvider>().user;
-    textController = TextEditingController(text: user?.photoUrl);
-
     return AdvancedDrawer(
       backdrop: Container(
         decoration: BoxDecoration(
@@ -62,74 +61,15 @@ class _HomeScreenState extends State<HomeScreen> {
       animationDuration: const Duration(milliseconds: 300),
       animateChildDecoration: true,
       rtlOpening: false,
-      childDecoration: const BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(16)),
+      childDecoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(16.r)),
       ),
       drawer: const MenuWidget(),
       child: Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            onPressed: _advancedDrawerController.showDrawer,
-            icon: ShowMenu(advancedDrawerController: _advancedDrawerController),
-          ),
-          actions: [
-            InkWell(
-              onTap: () => showAdaptiveDialog(
-                context: context,
-                builder: (context) => AlertDialog.adaptive(
-                  title: const Text('Change Profile Image:'),
-                  content: TextField(
-                    controller: textController, // Foydalanuvchi yozadigan joy
-                    decoration: const InputDecoration(
-                      hintText: 'Enter Image URL',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  actions: [
-                    ElevatedButton(
-                      onPressed: () async {
-                        final newUrl = textController.text.trim();
-                        if (newUrl.isNotEmpty) {
-                          await FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(user?.uid)
-                              .update({'photoURL': newUrl});
-
-                          // Local AuthProvider ni yangilash
-                          context.read<AuthProvider>().loadUserData();
-
-                          if (mounted) Navigator.of(context).pop();
-                        }
-                      },
-                      child: const Text('Change'),
-                    ),
-                  ],
-                ),
-              ),
-
-              child: Padding(
-                padding: EdgeInsets.only(right: 12.w),
-                child: CircleAvatar(
-                  radius: 18.r,
-                  backgroundColor: Colors.cyanAccent,
-                  child: CircleAvatar(
-                    maxRadius: 15.r,
-                    foregroundImage: NetworkImage(
-                      user?.photoUrl ??
-                          'https://png.pngtree.com/png-vector/20231019/ourmid/pngtree-user-profile-avatar-png-image_10211467.png',
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+        appBar: buildAppBar(context, user),
         body: Stack(
           children: [
-            // Background Gradient
             Container(
               width: double.infinity,
               height: double.infinity,
@@ -144,7 +84,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
             Positioned(left: 30.w, top: 30.h, child: _blurCircle()),
             Positioned(right: 40.w, top: 300.h, child: _blurCircle()),
             Positioned(
@@ -153,27 +92,247 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 300.h,
               child: Assets.images.homeBook.image(),
             ),
+            const AnimatedStarsLayer(),
+            Positioned(
+              bottom: 0.h,
+              left: 0.w,
+              right: 0.w,
+              child: Assets.images.splashBottom.svg(
+                fit: BoxFit.cover,
+                colorFilter: const ColorFilter.mode(
+                  Colors.black,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
             Padding(
               padding: EdgeInsets.all(15.w),
               child: SafeArea(
                 child: Column(
                   children: [
                     SizedBox(height: 120.h),
-                    _topContainer(),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BookmarkScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(15.w),
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 20.r,
+                              spreadRadius: 4.r,
+                              color: Color.fromARGB(165, 98, 203, 255),
+                            ),
+                          ],
+                          borderRadius: BorderRadius.circular(15.r),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color.fromARGB(255, 134, 215, 255),
+                              Color.fromARGB(62, 100, 210, 250),
+                            ],
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "بسم الله الرحمن الرحيم",
+                              style: TextStyle(
+                                fontSize: 30.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "📖 Your Saved",
+                                  style: TextStyle(
+                                    fontSize: 17.sp,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 12.h),
+                            Consumer<SurahBookmarkProvider>(
+                              builder: (context, provider, child) {
+                                return FutureBuilder<
+                                  Map<int, Map<String, dynamic>>
+                                >(
+                                  future: provider.getBookmarkedSurahs(),
+                                  builder: (context, snapshot) {
+                                    final count = snapshot.hasData
+                                        ? snapshot.data!.length
+                                        : 0;
+                                    return Row(
+                                      children: [
+                                        Text(
+                                          "Surahs count: $count",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16.sp,
+                                          ),
+                                        ),
+                                        Spacer(),
+                                        Icon(
+                                          Icons.bookmark,
+                                          color: Colors.white,
+                                          size: 40.sp,
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     SizedBox(height: 30.h),
                     Expanded(
                       child: GridView.builder(
-                        itemCount: category.length,
-                        padding: EdgeInsets.zero,
+                        itemCount: 4,
+                        padding: EdgeInsets.symmetric(horizontal: 10.w),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           mainAxisSpacing: 30.h,
                           crossAxisSpacing: 30.w,
                           mainAxisExtent: 145.h,
                         ),
-                        itemBuilder: (context, index) {
-                          return _buildCard(category[index]);
-                        },
+                        itemBuilder: (context, index) => GestureDetector(
+                          onTap: () {
+                            if (index == 1) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SurahScreen(page: 1),
+                                ),
+                              );
+                            } else if (index == 2) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SurahAudioScreen(
+                                    surahNumber: 36,
+                                    surahName: 'Ya-Sin',
+                                    surahEnglishName: 'Ya-Sin',
+                                  ),
+                                ),
+                              );
+                            } else if (index == 3) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SurahAudioScreen(
+                                    surahNumber: 2,
+                                    surahName: 'Ayatul Kursi',
+                                    surahEnglishName: 'Ayatul Kursi',
+                                    startAyah: 255,
+                                    endAyah: 255,
+                                  ),
+                                ),
+                              );
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SurahScreen(),
+                                ),
+                              );
+                            }
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.all(10.w),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                Positioned(
+                                  top: 0,
+                                  bottom: -80.h,
+                                  left: -30.w,
+                                  child: Assets.images.homeBook.image(
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20.r),
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Color.fromARGB(255, 152, 221, 255),
+                                        Color.fromARGB(150, 110, 216, 255),
+                                      ],
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Color.fromARGB(
+                                          255,
+                                          125,
+                                          230,
+                                          248,
+                                        ).withOpacity(0.2),
+                                        blurRadius: 15.r,
+                                        offset: Offset(0, 8.h),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "سورة",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 35.sp,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                    Text(
+                                      category[index],
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20.sp,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Positioned(
+                                  bottom: 1.h,
+                                  left: 2.w,
+                                  child: IconButton(
+                                    style: IconButton.styleFrom(
+                                      minimumSize: Size(0, 0),
+                                      backgroundColor: Color(0xFF0C2165),
+                                      foregroundColor: Color(0xFF8590B2),
+                                    ),
+                                    onPressed: () {},
+                                    icon: Icon(
+                                      Icons.arrow_forward_ios_outlined,
+                                      size: 20.sp,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -186,142 +345,80 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  AppBar buildAppBar(BuildContext context, UserModel? user) {
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      excludeHeaderSemantics: true,
+      leading: IconButton(
+        onPressed: _advancedDrawerController.showDrawer,
+        icon: ShowMenu(advancedDrawerController: _advancedDrawerController),
+      ),
+      actions: [
+        InkWell(
+          onTap: () => showAdaptiveDialog(
+            context: context,
+            builder: (context) => AlertDialog.adaptive(
+              title: const Text('Change Profile Image:'),
+              content: TextField(
+                controller: textController,
+                decoration: const InputDecoration(
+                  hintText: 'Enter Image URL',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              actions: [
+                ElevatedButton(
+                  onPressed: () async {
+                    final newUrl = textController.text.trim();
+                    if (newUrl.isNotEmpty) {
+                      await FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(user?.uid)
+                          .update({'photoURL': newUrl});
+                      context.read<AuthProvider>().loadUserData();
+                      if (mounted) Navigator.of(context).pop();
+                    }
+                  },
+                  child: const Text('Change'),
+                ),
+              ],
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.only(right: 3.w, top: 3.h),
+            child: CircleAvatar(
+              radius: 40.r,
+              backgroundColor: Colors.cyanAccent,
+              child: CircleAvatar(
+                maxRadius: 20.r,
+                foregroundImage: NetworkImage(
+                  user?.photoUrl ??
+                      'https://png.pngtree.com/png-vector/20231019/ourmid/pngtree-user-profile-avatar-png-image_10211467.png',
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _blurCircle() {
     return CircleAvatar(
       radius: 2.5.r,
       backgroundColor: Colors.transparent,
       child: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              blurRadius: 100,
+              blurRadius: 100.r,
               color: Color.fromARGB(255, 105, 138, 254),
-              spreadRadius: 100,
+              spreadRadius: 100.r,
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _topContainer() {
-    return Container(
-      padding: EdgeInsets.all(15.w),
-      decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 20,
-            spreadRadius: 4,
-            color: const Color.fromARGB(165, 98, 203, 255),
-          ),
-        ],
-        borderRadius: BorderRadius.circular(15.r),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color.fromARGB(255, 134, 215, 255),
-            Color.fromARGB(62, 100, 210, 250),
-          ],
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "بسم الله الرحمن الرحيم",
-            style: TextStyle(
-              fontSize: 30.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 10.h),
-          Center(
-            child: Text(
-              "📖 Your Saved",
-              style: TextStyle(
-                fontSize: 17.sp,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          Text(
-            "Saved Surahs Page",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 22.sp,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCard(String title) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20.r),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color.fromARGB(255, 152, 221, 255),
-            Color.fromARGB(150, 110, 216, 255),
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color.fromARGB(255, 125, 230, 248).withOpacity(0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: 0,
-            bottom: -80.h,
-            left: -30.w,
-            child: Assets.images.homeBook.image(fit: BoxFit.cover),
-          ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "سورة",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 35.sp,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            bottom: 1.h,
-            left: 2.w,
-            child: const Icon(
-              Icons.arrow_forward_ios_outlined,
-              size: 20,
-              color: Colors.white,
-            ),
-          ),
-        ],
       ),
     );
   }

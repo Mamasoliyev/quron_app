@@ -1,16 +1,16 @@
-class SurahListModel {
+class SurahModel {
   final int code;
   final String status;
   final List<SurahData> data;
 
-  SurahListModel({
+  SurahModel({
     required this.code,
     required this.status,
     required this.data,
   });
 
-  factory SurahListModel.fromJson(Map<String, dynamic> json) {
-    return SurahListModel(
+  factory SurahModel.fromJson(Map<String, dynamic> json) {
+    return SurahModel(
       code: json['code'],
       status: json['status'],
       data: List<SurahData>.from(

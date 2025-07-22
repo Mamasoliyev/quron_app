@@ -1,14 +1,15 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    
-    <!-- Internet permission qo‘shildi -->
-    <uses-permission android:name="android.permission.INTERNET"/>
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.quron_app">
+
+    <!-- Internet permission -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:label="quron_app"
-        android:name="${applicationName}"
+        android:label="Quron App"
         android:icon="@mipmap/ic_launcher">
 
-        <!-- Google Wallet API meta-data qo‘shildi -->
+        <!-- Google Wallet API meta-data -->
         <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"
             android:value="true" />
@@ -33,13 +34,13 @@
             </intent-filter>
         </activity>
 
-        <!-- Flutter tool uchun kerakli meta-data -->
+        <!-- Flutter uchun meta-data -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
 
-    <!-- Textni tahrirlay oladigan activity-larni aniqlash uchun -->
+    <!-- External text editing apps bilan ishlash uchun -->
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT" />
